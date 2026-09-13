@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confirmed</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="center">
+      <div class="check-circle">✓</div>
+      <h1>All set</h1>
+      <p class="sub">Your payment has been registered and verified. We'll follow up by email if anything else is needed.</p>
+    </div>
+    <div class="summary-box" id="finalSummary"></div>
+    <button type="button" id="doneBtn">Register another payment</button>
+  </div>
+
+<script>
+  const paymentData = JSON.parse(sessionStorage.getItem('paymentData') || '{}');
+
+  document.getElementById('finalSummary').innerHTML = `
+    <div><span>Tracking Number</span><span>${paymentData.tracking || '-'}</span></div>
+    <div><span>Amount</span><span>${paymentData.amount || '-'} ${paymentData.currency || ''}</span></div>
+    <div><span>Status</span><span>Verified</span></div>
+  `;
+
+  document.getElementById('doneBtn').addEventListener('click', () => {
+    sessionStorage.clear();
+    window.location.href = 'index.html';
+  });
+</script>
+</body>
+</html>

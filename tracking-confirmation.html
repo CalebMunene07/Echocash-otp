@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment Registered</title>
+<link rel="stylesheet" href="style.css">
+
+<style>
+.tracking-display{
+    margin:25px 0;
+    padding:20px;
+    background:#f5f5f5;
+    border-radius:10px;
+    text-align:center;
+}
+
+.tracking-label{
+    display:block;
+    font-size:14px;
+    color:#666;
+    margin-bottom:8px;
+}
+
+.tracking-number{
+    display:block;
+    font-size:24px;
+    font-weight:700;
+    color:#0b66b2;
+    letter-spacing:1px;
+}
+
+.tracking-link{
+    display:block;
+    width:100%;
+    padding:14px 20px;
+    background:#0b66b2;
+    color:#fff;
+    text-align:center;
+    text-decoration:none;
+    border-radius:8px;
+    font-weight:600;
+    margin-top:15px;
+}
+
+.tracking-link:hover{
+    background:#084f89;
+}
+
+.back-link{
+    display:block;
+    width:100%;
+    margin-top:12px;
+    text-align:center;
+    text-decoration:none;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+```
+<h1>Registration Successful</h1>
+
+<p class="sub">
+    Your payment tracking entry has been registered.
+</p>
+
+
+<!-- TRACKING NUMBER ONLY -->
+
+<div class="tracking-display">
+
+    <span class="tracking-label">
+        Tracking Number
+    </span>
+
+    <span
+        class="tracking-number"
+        id="trackingNumber">
+    </span>
+
+</div>
+
+
+<!-- TRACKING PAGE LINK -->
+
+<a
+    href="account.html"
+    class="tracking-link"
+    id="trackingLink">
+    Go to Tracking Page
+</a>
+
+
+<!-- EDIT DETAILS -->
+
+<a
+    href="index.html"
+    class="back-link"
+    id="backBtn">
+    ← Edit details
+</a>
+```
+
+</div>
+
+<script>
+
+const paymentData = JSON.parse(
+    sessionStorage.getItem('paymentData') || '{}'
+);
+
+
+/* Check that tracking data exists */
+
+if(!paymentData.tracking){
+
+    window.location.href = 'index.html';
+
+}
+
+
+/* Display tracking number */
+
+document.getElementById('trackingNumber').textContent =
+    paymentData.tracking;
+
+</script>
+
+</body>
+</html>
+

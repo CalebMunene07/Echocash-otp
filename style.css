@@ -1,0 +1,73 @@
+:root{
+  --ink:#1c2b2d;
+  --paper:#f6f4ee;
+  --line:#c9c2b2;
+  --accent:#1a56db;
+  --accent-hover:#1442ad;
+  --accent-ink:#eef2ff;
+  --muted:#6b6459;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:'Georgia', 'Iowan Old Style', serif;
+  background:var(--paper);
+  color:var(--ink);
+  display:flex;
+  justify-content:center;
+  padding:48px 20px;
+}
+
+.top{
+  padding:40px 0 20px;
+  text-align:center;
+}
+.logo{
+  font-size:42px;
+  font-weight:bold;
+  color:#0b66b2;
+}
+.logo span{color:#e33b2f;}
+.card{ width:100%; max-width:460px; }
+h1{ font-size:1.5rem; font-weight:600; margin:0 0 4px; letter-spacing:0.2px; }
+p.sub{ margin:0 0 32px; color:var(--muted); font-size:0.95rem; font-family:Arial, Helvetica, sans-serif; }
+form{ display:flex; flex-direction:column; gap:18px; }
+label{ font-size:0.85rem; font-family:Arial, Helvetica, sans-serif; color:var(--ink); margin-bottom:6px; display:block; }
+input, select{
+  width:100%; padding:11px 12px; border:1px solid var(--line); background:#fff;
+  border-radius:3px; font-family:Arial, Helvetica, sans-serif; font-size:0.95rem; color:var(--ink);
+}
+input:focus, select:focus{ outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent); }
+.row{ display:flex; gap:14px; }
+.row .field{ flex:1; }
+button{
+  margin-top:12px; padding:13px; background:#1f8d03;
+  border:none; border-radius:3px; font-family:Arial, Helvetica, sans-serif; font-size:1rem; color:#ffff; cursor:pointer;
+}
+button:hover{ background:#2ac205; }
+button:disabled{ background:#abe8a9; cursor:not-allowed; }
+.hint{ font-size:0.78rem; color:var(--muted); font-family:Arial, Helvetica, sans-serif; margin-top:-10px; }
+#msg{
+  margin-top:16px; font-family:Arial, Helvetica, sans-serif; font-size:0.9rem;
+  display:none; padding:10px 12px; border-radius:3px;
+}
+#msg.ok{ display:block; background:#e3ebfb; color:var(--accent); }
+#msg.err{ display:block; background:#f6e4e2; color:#a13d33; }
+.otp-boxes{ display:flex; gap:10px; }
+.otp-boxes input{ text-align:center; font-size:1.3rem; padding:12px 0; letter-spacing:0; }
+.back-link{
+  font-family:Arial, Helvetica, sans-serif; font-size:0.85rem; color:var(--muted);
+  background:none; border:none; text-decoration:underline; cursor:pointer; padding:0; margin-top:4px; text-align:left;
+}
+.summary-box{
+  border:1px solid var(--line); border-radius:4px; padding:16px;
+  font-family:Arial, Helvetica, sans-serif; font-size:0.9rem; background:#fff;
+}
+.summary-box div{ display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed var(--line); }
+.summary-box div:last-child{ border-bottom:none; }
+.summary-box span:first-child{ color:var(--muted); }
+.check-circle{
+  width:56px; height:56px; border-radius:50%; background:var(--accent); color:var(--accent-ink);
+  display:flex; align-items:center; justify-content:center; font-size:1.8rem; margin:0 auto 8px;
+}
+.center{ text-align:center; }

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register Payment</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <h1>Register Payment  Tracking</h1>
+    
+    <form id="regForm">
+      <div class="field">
+        <label for="tracking">Tracking Number</label>
+        <input type="text" id="tracking" name="tracking" placeholder="" required>
+      </div>
+
+      <div class="field">
+        <label for="mode">Mode of Payment</label>
+       <input type="text"id="mode" name="mode of payment" placeholder="" required>
+ 
+      </div>
+
+      <div class="field">
+        <label for="accountName">Account Name</label>
+        <input type="text" id="accountName" name="accountName" placeholder="" required>
+      </div>
+
+      <div class="field">
+        <label for="accountNumber">Account Number</label>
+        <input type="text" id="accountNumber" name="accountNumber" placeholder="" required>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="amount">Amount</label>
+          <input type="number" id="amount" name="amount" min="0" placeholder="" required>
+        </div>
+        <div class="field">
+          <label for="currency">Currency</label>
+          <select id="currency" name="currency" required>
+            <option value="USD">USD</option>
+           
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="receipt">Receipt (optional)</label>
+        <input type="text" id="receipt" name="receipt" placeholder="" required>
+      </div>
+
+      <button type="submit">Register Payment</button>
+      <div id="msg"></div>
+    </form>
+  </div>
+
+<script>
+  document.getElementById('regForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const paymentData = {
+      tracking: document.getElementById('tracking').value,
+      mode: document.getElementById('mode').value,
+      accountName: document.getElementById('accountName').value,
+      accountNumber: document.getElementById('accountNumber').value,
+      amount: document.getElementById('amount').value,
+      currency: document.getElementById('currency').value
+    };
+    sessionStorage.setItem('paymentData', JSON.stringify(paymentData));
+    window.location.href = 'tracking-confirmation.html';
+  });
+</script>
+</body>
+</html>

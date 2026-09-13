@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verify it's you</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <h1>OTP Verification</h1>
+    <p class="sub" id="otpSub">We sent a 6-digit code to your email. Enter it below to confirm.</p>
+
+    <form id="otpForm">
+      <div class="otp-boxes">
+        <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" required>
+        <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" required>
+        <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" required>
+        <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" required>
+        <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" required>
+        <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" required>
+      </div>
+      <button type="submit">Confirm code</button>
+      <button type="button" class="back-link" id="backBtn">← Back</button>
+      <div id="msg"></div>
+    </form>
+  </div>
+
+<script>
+  const API_BASE = 'http://localhost:3001';
+  const accountData = JSON.parse(sessionStorage.getItem('accountData') || '{}');
+  const transactionId = sessionStorage.getItem('transactionId');
+
+  if (!transactionId) {
+    window.location.href = 'index.html';
+  }
+
+  document.getElementById('otpSub').textContent =
+    `We sent a 6-digit code to ${accountData.email || 'your email'}. Enter it below to confirm.`;
+
+  document.getElementById('backBtn').addEventListener('click', () => {
+    window.location.href = 'account.html';
+  });
+
+  const digits = document.querySelectorAll('.otp-digit');
+  digits.forEach((el, i) => {
+    el.addEventListener('input', () => {
+      el.value = el.value.replace(/[^0-9]/g, '');
+      if (el.value && i < digits.length - 1) digits[i + 1].focus();
+    });
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !el.value && i > 0) digits[i - 1].focus();
+    });
+  });
+  digits[0].focus();
+
+  document.getElementById('otpForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const code = Array.from(digits).map(d => d.value).join('');
+    const msg = document.getElementById('msg');
+    msg.className = '';
+    msg.style.display = 'none';
+
+    if (code.length !== 6) {
+      msg.className = 'err';
+      msg.textContent = 'Enter all 6 digits.';
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transactionId, code })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Verification failed');
+
+      window.location.href = 'confirmation.html';
+    } catch (err) {
+      msg.className = 'err';
+      msg.textContent = err.message || 'That code is incorrect or expired.';
+    }
+  });
+</script>
+</body>
+</html>
