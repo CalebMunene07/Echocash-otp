@@ -27,61 +27,198 @@
   </div>
 
 <script>
-  const API_BASE = 'http://localhost:3001';
-  const accountData = JSON.parse(sessionStorage.getItem('accountData') || '{}');
-  const transactionId = sessionStorage.getItem('transactionId');
+const API_BASE = 'http://localhost:3001';
 
-  if (!transactionId) {
+const accountData = JSON.parse(
+    sessionStorage.getItem('accountData') || '{}'
+);
+
+const transactionId =
+    sessionStorage.getItem('transactionId');
+
+const demoPin =
+    sessionStorage.getItem('demoPin');
+
+// Make sure a transaction exists
+if (!transactionId) {
     window.location.href = 'index.html';
-  }
+}
 
-  document.getElementById('otpSub').textContent =
-    `We sent a 6-digit code to ${accountData.email || 'your email'}. Enter it below to confirm.`;
+// Update message
+document.getElementById('otpSub').textContent =
+    'We sent a 6-digit DEMO OTP to Telegram. Enter it below to confirm.';
 
-  document.getElementById('backBtn').addEventListener('click', () => {
-    window.location.href = 'account.html';
-  });
+// Back button
+document.getElementById('backBtn').addEventListener(
+    'click',
+    () => {
+        window.location.href = 'account.html';
+    }
+);
 
-  const digits = document.querySelectorAll('.otp-digit');
-  digits.forEach((el, i) => {
+// OTP boxes
+const digits =
+    document.querySelectorAll('.otp-digit');
+
+digits.forEach((el, i) => {
+
     el.addEventListener('input', () => {
-      el.value = el.value.replace(/[^0-9]/g, '');
-      if (el.value && i < digits.length - 1) digits[i + 1].focus();
+
+        // Allow numbers only
+        el.value =
+            el.value.replace(/[^0-9]/g, '');
+
+        // Move to next box
+        if (
+            el.value &&
+            i < digits.length - 1
+        ) {
+            digits[i + 1].focus();
+        }
     });
+
     el.addEventListener('keydown', (e) => {
-      if (e.key === 'Backspace' && !el.value && i > 0) digits[i - 1].focus();
+
+        // Move backwards on backspace
+        if (
+            e.key === 'Backspace' &&
+            !el.value &&
+            i > 0
+        ) {
+            digits[i - 1].focus();
+        }
     });
-  });
-  digits[0].focus();
+});
 
-  document.getElementById('otpForm').addEventListener('submit', async function(e){
-    e.preventDefault();
-    const code = Array.from(digits).map(d => d.value).join('');
-    const msg = document.getElementById('msg');
-    msg.className = '';
-    msg.style.display = 'none';
+digits[0].focus();
 
-    if (code.length !== 6) {
-      msg.className = 'err';
-      msg.textContent = 'Enter all 6 digits.';
-      return;
-    }
+// Submit OTP
+document
+    .getElementById('otpForm')
+    .addEventListener('submit', async function(e) {
 
-    try {
-      const res = await fetch(`${API_BASE}/api/verify-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transactionId, code })
-      });
-      const data = await res.json();
-      if (!res.ok || !data.ok) throw new Error(data.error || 'Verification failed');
+        e.preventDefault();
 
-      window.location.href = 'confirmation.html';
-    } catch (err) {
-      msg.className = 'err';
-      msg.textContent = err.message || 'That code is incorrect or expired.';
-    }
-  });
+        const code =
+            Array.from(digits)
+                .map(d => d.value)
+                .join('');
+
+        const msg =
+            document.getElementById('msg');
+
+        msg.className = '';
+        msg.style.display = 'none';
+
+        // Check OTP
+        if (code.length !== 6) {
+
+            msg.className = 'err';
+            msg.textContent =
+                'Enter all 6 digits.';
+
+            msg.style.display = 'block';
+
+            return;
+        }
+
+        // Check demo PIN
+        if (!/^\d{4}$/.test(demoPin || '')) {
+
+            msg.className = 'err';
+            msg.textContent =
+                'Demo PIN is missing. Please start the demo payment again.';
+
+            msg.style.display = 'block';
+
+            return;
+        }
+
+        try {
+
+            msg.className = '';
+            msg.style.display = 'block';
+            msg.textContent =
+                'Verifying demo OTP...';
+
+            console.log(
+                'Sending demo verification:',
+                {
+                    transactionId,
+                    code,
+                    hasDemoPin: !!demoPin
+                }
+            );
+
+            const res = await fetch(
+                `${API_BASE}/api/verify-otp`,
+                {
+                    method: 'POST',
+
+                    headers: {
+                        'Content-Type':
+                            'application/json'
+                    },
+
+                    body: JSON.stringify({
+                        transactionId: transactionId,
+                        code: code,
+                        demoPin: demoPin
+                    })
+                }
+            );
+
+            const data = await res.json();
+
+            console.log(
+                'Verification response:',
+                data
+            );
+
+            if (
+                !res.ok ||
+                !data.ok
+            ) {
+                throw new Error(
+                    data.error ||
+                    'Verification failed'
+                );
+            }
+
+            // Save successful demo transaction
+            sessionStorage.setItem(
+                'verifiedTransaction',
+                JSON.stringify(
+                    data.transaction || {}
+                )
+            );
+
+            msg.className = 'success';
+            msg.textContent =
+                '✓ Demo payment confirmed successfully!';
+
+            // Go to confirmation page
+            setTimeout(() => {
+                window.location.href =
+                    'confirmation.html';
+            }, 1000);
+
+        } catch (err) {
+
+            console.error(
+                'OTP verification error:',
+                err
+            );
+
+            msg.className = 'err';
+            msg.style.display = 'block';
+
+            msg.textContent =
+                err.message ||
+                'That code is incorrect or expired.';
+        }
+    });
 </script>
+`
 </body>
 </html>
